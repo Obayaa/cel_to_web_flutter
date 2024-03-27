@@ -29,15 +29,30 @@ class LocalSourceRepoImplementation extends TaskRepo {
   }
 
   @override
-  Future<Results> deleteTask() {
-    // TODO: implement deleteTask
-    throw UnimplementedError();
+  Future<Results> deleteTask(int id) async {
+    try {
+      final db = await SQLHelper.instance.database;
+      final response =
+          await db?.delete(SQLHelper.tableName, where: "id=?", whereArgs: [id]);
+      //  return response.map((e) => TaskModel.fromJson(e)).toList();
+      log("deleted response: $response");
+      return Success(value: response);
+    } catch (e) {
+      return Failed(value: e);
+    }
   }
 
   @override
-  Future<Results> getTask() {
-    // TODO: implement getTask
-    throw UnimplementedError();
+  Future<Results> getTask(int id) async {
+    try {
+      final db = await SQLHelper.instance.database;
+      final response = await db?.query(SQLHelper.tableName,
+          where: "id=?", whereArgs: ['id'], limit: 1);
+      final result = response!.map((e) => TaskModel.fromJson(e)).toList();
+      return Success(value: result);
+    } catch (e) {
+      return Failed(value: e);
+    }
   }
 
   @override
@@ -53,8 +68,26 @@ class LocalSourceRepoImplementation extends TaskRepo {
   }
 
   @override
-  Future<Results> updateTask() {
-    // TODO: implement updateTask
-    throw UnimplementedError();
+  Future<Results> updateTask(String title, String description, int id) async {
+    try {
+      final db = await SQLHelper.instance.database;
+      Map<String, String> values = {
+        "title": title,
+        "description": description,
+      };
+      log("values $values");
+      final response = await db?.update(
+        SQLHelper.tableName,
+        values,
+        where: "id=?",
+        whereArgs: [id],
+      );
+
+      log('updated data: $response');
+      return Success(value: response);
+    } catch (e) {
+      log('error: $e');
+      return Failed(value: e);
+    }
   }
 }
